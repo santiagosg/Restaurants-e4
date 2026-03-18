@@ -80,9 +80,7 @@ temp/
 .sentryclirc
 
 # Claude / AI
-.claude/session/
-.claude/mcp/
-.claude/tasks/
+.claude/
 
 # Project specific
 *.md.backup
