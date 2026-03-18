@@ -1,0 +1,330 @@
+# Workflow: Feature Development
+
+name: feature_development
+version: 1.0.0
+description: Flujo completo para desarrollo de nuevas features
+
+trigger:
+  user_request:
+    - "Crear nueva feature"
+    - "Implementar módulo"
+    - "Agregar funcionalidad"
+    - "Desarrollar endpoint"
+
+phases:
+  - name: Planning
+    agent: meta
+    estimated_duration: 10min
+    tasks:
+      - name: Analyze requirements
+        description: Analizar requerimientos del usuario
+        output: requirements_document
+
+      - name: Create WBS
+        description: Crear Work Breakdown Structure
+        output: wbs_document
+
+      - name: Estimate effort
+        description: Estimar esfuerzo y tiempo
+        output: estimation
+
+      - name: Identify dependencies
+        description: Identificar dependencias entre tareas
+        output: dependency_graph
+
+      - name: Define acceptance criteria
+        description: Definir criterios de aceptación
+        output: acceptance_criteria
+
+    deliverables:
+      - .claude/memory/requirements.md
+      - .claude/memory/plan.md
+
+  - name: Schema Design
+    agent: database
+    depends_on: Planning
+    estimated_duration: 20min
+    tasks:
+      - name: Design models
+        description: Diseñar modelos Prisma requeridos
+        output: schema_changes
+
+      - name: Create migration
+        description: Crear archivo de migración
+        output: migration_file
+
+      - name: Apply migration locally
+        description: Aplicar migración en desarrollo
+        output: validated_schema
+
+      - name: Create seed data
+        description: Crear datos de prueba
+        output: seed_data
+
+    deliverables:
+      - prisma/schema.prisma (actualizado)
+      - prisma/migrations/{timestamp}_{name}.sql
+      - prisma/seed.ts (actualizado)
+
+  - name: API Implementation
+    agent: backend
+    depends_on: Schema Design
+    estimated_duration: 30min
+    tasks:
+      - name: Create/update module
+        description: Crear o actualizar módulo NestJS
+        output: module_file
+
+      - name: Create DTOs
+        description: Crear DTOs de request/response
+        output: dto_files
+
+      - name: Implement controller
+        description: Implementar controlador con endpoints
+        output: controller_file
+
+      - name: Implement service
+        description: Implementar servicio con lógica de negocio
+        output: service_file
+
+      - name: Add guards/pipes
+        description: Agregar guards, pipes, interceptores
+        output: auth_validation_files
+
+      - name: Add error handling
+        description: Manejo de errores apropiado
+        output: error_handling
+
+    deliverables:
+      - src/{module}/{module}.module.ts
+      - src/{module}/dto/*.dto.ts
+      - src/{module}/{module}.controller.ts
+      - src/{module}/{module}.service.ts
+      - src/{module}/guards/*.guard.ts
+      - src/{module}/pipes/*.pipe.ts
+
+  - name: Documentation
+    agent: docs
+    depends_on: API Implementation
+    estimated_duration: 15min
+    tasks:
+      - name: Add Swagger decorators
+        description: Documentar endpoints con decorators Swagger
+        output: documented_endpoints
+
+      - name: Create response DTOs
+        description: Crear DTOs de respuesta para Swagger
+        output: response_dtos
+
+      - name: Add examples
+        description: Agregar ejemplos de request/response
+        output: examples
+
+      - name: Create ADR if applicable
+        description: Crear ADR si es decisión arquitectónica
+        output: adr_file
+
+    deliverables:
+      - src/{module}/{module}.controller.ts (actualizado con Swagger)
+      - src/{module}/dto/*.dto.ts (actualizado con @ApiProperty)
+      - docs/adrs/{number}-{title}.md (si aplica)
+
+  - name: Testing
+    agent: testing
+    depends_on: [API Implementation, Documentation]
+    estimated_duration: 25min
+    tasks:
+      - name: Create unit tests
+        description: Tests unitarios para servicio
+        output: unit_test_file
+
+      - name: Create integration tests
+        description: Tests de integración
+        output: integration_test_file
+
+      - name: Create E2E tests
+        description: Tests E2E con Supertest
+        output: e2e_test_file
+
+      - name: Create fixtures
+        description: Fixtures para tests
+        output: fixtures
+
+      - name: Validate coverage
+        description: Validar que coverage >= 80%
+        output: coverage_report
+
+    deliverables:
+      - src/{module}/*.spec.ts
+      - tests/{module}/{module}.e2e-spec.ts
+      - tests/fixtures/{module}.ts
+      - coverage/index.html
+
+  - name: Quality Gates
+    agent: meta
+    depends_on: Testing
+    estimated_duration: 5min
+    tasks:
+      - name: Run linters
+        description: Ejecutar ESLint y Prettier
+        output: lint_results
+
+      - name: Validate TypeScript
+        description: Compilar TypeScript
+        output: build_results
+
+      - name: Run all tests
+        description: Ejecutar suite completa de tests
+        output: test_results
+
+      - name: Security scan
+        description: npm audit y Snyk
+        output: security_results
+
+      - name: Validate documentation
+        description: Validar Swagger docs
+        output: docs_validation
+
+    acceptance_criteria:
+      - ESLint: 0 errores
+      - TypeScript: 0 errores
+      - Tests: 100% pasando
+      - Coverage: >= 80%
+      - Security: Sin vulnerabilidades High/Critical
+      - Docs: Swagger schema válido
+
+    deliverables:
+      - CI reports
+      - Coverage reports
+      - Security reports
+
+  - name: CI/CD
+    agent: devops
+    depends_on: Quality Gates
+    estimated_duration: 10min
+    tasks:
+      - name: Configure pipeline
+        description: Configurar GitHub Actions
+        output: workflow_file
+
+      - name: Setup deployment to staging
+        description: Configurar deployment a staging
+        output: deployment_config
+
+      - name: Configure environment variables
+        description: Setup variables de entorno
+        output: env_config
+
+      - name: Configure monitoring
+        description: Setup de health checks y monitoring
+        output: monitoring_config
+
+    deliverables:
+      - .github/workflows/{name}.yml
+      - docker-compose.yml (actualizado)
+      - Railway/Vercel config (si aplica)
+
+  - name: Staging Validation
+    agent: testing
+    depends_on: CI/CD
+    estimated_duration: 15min
+    tasks:
+      - name: Deploy to staging
+        description: Desplegar a staging
+        output: deployed_app
+
+      - name: Run E2E tests on staging
+        description: Tests E2E contra staging
+        output: e2e_results
+
+      - name: Validate API contracts
+        description: Validar contratos de API
+        output: contract_validation
+
+      - name: Performance test
+        description: Test de carga básico
+        output: performance_report
+
+    deliverables:
+      - E2E test results (staging)
+      - Performance report
+      - Staging environment URL
+
+  - name: Update CHANGELOG
+    agent: docs
+    depends_on: Staging Validation
+    estimated_duration: 3min
+    tasks:
+      - name: Document changes
+        description: Actualizar CHANGELOG.md
+        output: changelog_entry
+
+      - name: Tag version if release
+        description: Crear tag de versión
+        output: git_tag
+
+    deliverables:
+      - CHANGELOG.md (actualizado)
+      - Git tag (si es release)
+
+completion:
+  criteria:
+    - Todos los acceptance criteria cumplidos
+    - Tests E2E pasando en staging
+    - Documentación completa en Swagger
+    - CHANGELOG actualizado
+    - Review de código completado
+    - Aprobación para merge a main
+
+  artifacts:
+    - Código fuente completo
+    - Tests con coverage >= 80%
+    - Documentación Swagger
+    - CHANGELOG.md actualizado
+    - CI/CD configurado
+    - Staging deploy validado
+
+rollback_plan:
+  1: Revert changes en Git
+  2: Rollback deployment en staging
+  3: Notificar a equipo
+  4: Análisis post-mortem si falló
+
+risk_mitigation:
+  - Database migration failures:
+      mitigation: Backup antes de migración, rollback plan
+  - Breaking API changes:
+      mitigation: Versionado de API, deprecation warnings
+  - Performance degradation:
+      mitigation: Load testing antes de prod, gradual rollout
+  - Security vulnerabilities:
+      mitigation: Security scanning en pipeline, code review
+
+escalation:
+  level_1:
+    condition: Tarea bloqueada > 30 min
+    action: Revisar logs, intentar resolución alternativa
+
+  level_2:
+    condition: Tarea bloqueada > 1 hora
+    action: Notificar a usuario, solicitar dirección
+
+  level_3:
+    condition: Múltiples bloqueos simultáneos
+    action: Detener workflow, análisis completo, replanificación
+
+time_estimates:
+  optimistic: 80 min
+  realistic: 108 min (1h 48min)
+  pessimistic: 150 min (2h 30min)
+
+  breakdown:
+    Planning: 10 min
+    Schema Design: 20 min
+    API Implementation: 30 min
+    Documentation: 15 min
+    Testing: 25 min
+    Quality Gates: 5 min
+    CI/CD: 10 min
+    Staging Validation: 15 min
+    CHANGELOG: 3 min

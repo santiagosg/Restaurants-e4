@@ -1,0 +1,513 @@
+{
+	"info": {
+		"_postman_id": "restaurants-api-v3",
+		"name": "Restaurants API",
+		"description": "API de Restaurantes - Postman Collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000/v1",
+			"type": "string"
+		},
+		{
+			"key": "accessToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "restaurantId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "reservationId",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"email\":\"customer@example.com\",\"password\":\"SecurePass123!\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "login"]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"email\":\"customer@example.com\",\"password\":\"SecurePass123!\"}"
+								},
+								"url": {
+									"raw": "http://localhost:3000/v1/auth/login",
+									"host": ["http://localhost:3000"],
+									"path": ["v1", "auth", "login"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"body": "{\"success\":true,\"data\":{\"user\":{\"id\":\"550e8400-e29b-41d4-a716-446655440000\",\"email\":\"customer@example.com\",\"full_name\":\"John Doe\",\"role\":\"CUSTOMER\"},\"tokens\":{\"access_token\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\",\"expires_in\":3600}}}}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Restaurants",
+			"item": [
+				{
+					"name": "List Restaurants",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/restaurants?page=1&per_page=20",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurants"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "per_page",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/v1/restaurants?page=1&per_page=20",
+									"host": ["http://localhost:3000"],
+									"path": ["v1", "restaurants"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"body": "{\"success\":true,\"data\":[{\"id\":\"660e8400-e29b-41d4-a716-446655440001\",\"name\":\"La Cucina Italiana\",\"city\":\"Madrid\",\"average_rating\":4.5}],\"pagination\":{\"page\":1,\"total\":50}}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Menu",
+			"item": [
+				{
+					"name": "List Categories",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/restaurants/{{restaurantId}}/menu/categories",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurants", "{{restaurantId}}", "menu", "categories"]
+						}
+					}
+				},
+				{
+					"name": "List Products",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/restaurants/{{restaurantId}}/menu/products?page=1&per_page=20",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurants", "{{restaurantId}}", "menu", "products"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "per_page",
+									"value": "20"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Availability",
+			"item": [
+				{
+					"name": "Check Availability",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/restaurants/{{restaurantId}}/availability?date=2024-02-20&time=19:30&party_size=4",
+							"host": ["{{baseUrl}}"],
+							"path": ["restaurants", "{{restaurantId}}", "availability"],
+							"query": [
+								{
+									"key": "date",
+									"value": "2024-02-20"
+								},
+								{
+									"key": "time",
+									"value": "19:30"
+								},
+								{
+									"key": "party_size",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/v1/restaurants/660e8400-e29b-41d4-a716-446655440001/availability?date=2024-02-20&time=19:30&party_size=4",
+									"host": ["http://localhost:3000"],
+									"path": ["v1", "restaurants", "660e8400-e29b-41d4-a716-446655440001", "availability"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"body": "{\"success\":true,\"data\":{\"is_available\":true,\"available_tables\":[{\"id\":\"table-1\",\"table_number\":1,\"capacity\":4}],\"suggested_times\":[\"19:00\",\"19:30\"]}}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Reservations",
+			"item": [
+				{
+					"name": "Create Reservation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"restaurant_id\":\"{{restaurantId}}\",\"party_size\":4,\"reservation_date\":\"2024-02-20\",\"reservation_time\":\"19:30\",\"special_requests\":\"Cumpleanos\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/reservations",
+							"host": ["{{baseUrl}}"],
+							"path": ["reservations"]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"restaurant_id\":\"660e8400-e29b-41d4-a716-446655440001\",\"party_size\":4,\"reservation_date\":\"2024-02-20\",\"reservation_time\":\"19:30\",\"special_requests\":\"Cumpleanos\"}"
+								},
+								"url": {
+									"raw": "http://localhost:3000/v1/reservations",
+									"host": ["http://localhost:3000"],
+									"path": ["v1", "reservations"]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"body": "{\"success\":true,\"data\":{\"id\":\"ee1e8400-e29b-41d4-a716-446655440001\",\"restaurant_id\":\"660e8400-e29b-41d4-a716-446655440001\",\"table_id\":\"table-1\",\"reservation_date\":\"2024-02-20\",\"status\":\"PENDING\"}}"
+						}
+					]
+				},
+				{
+					"name": "Get Reservation",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/reservations/{{reservationId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["reservations", "{{reservationId}}"]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:3000/v1/reservations/ee1e8400-e29b-41d4-a716-446655440001",
+									"host": ["http://localhost:3000"],
+									"path": ["v1", "reservations", "ee1e8400-e29b-41d4-a716-446655440001"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"body": "{\"success\":true,\"data\":{\"id\":\"ee1e8400-e29b-41d4-a716-446655440001\",\"status\":\"PENDING\"}}"
+						}
+					]
+				},
+				{
+					"name": "Update Reservation",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"party_size\":6,\"special_requests\":\"Cumpleanos - silla alta\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/reservations/{{reservationId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["reservations", "{{reservationId}}"]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"party_size\":6,\"special_requests\":\"Cumpleanos - silla alta\"}"
+								},
+								"url": {
+									"raw": "http://localhost:3000/v1/reservations/ee1e8400-e29b-41d4-a716-446655440001",
+									"host": ["http://localhost:3000"],
+									"path": ["v1", "reservations", "ee1e8400-e29b-41d4-a716-446655440001"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"body": "{\"success\":true,\"data\":{\"id\":\"ee1e8400-e29b-41d4-a716-446655440001\",\"party_size\":6,\"status\":\"PENDING\"}}"
+						}
+					]
+				},
+				{
+					"name": "Cancel Reservation",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/reservations/{{reservationId}}/cancel",
+							"host": ["{{baseUrl}}"],
+							"path": ["reservations", "{{reservationId}}", "cancel"]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{}"
+								},
+								"url": {
+									"raw": "http://localhost:3000/v1/reservations/ee1e8400-e29b-41d4-a716-446655440001/cancel",
+									"host": ["http://localhost:3000"],
+									"path": ["v1", "reservations", "ee1e8400-e29b-41d4-a716-446655440001", "cancel"]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"body": "{\"success\":true,\"data\":{\"id\":\"ee1e8400-e29b-41d4-a716-446655440001\",\"status\":\"CANCELLED\"}}"
+						}
+					]
+				},
+				{
+					"name": "Delete Reservation",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/reservations/{{reservationId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["reservations", "{{reservationId}}"]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:3000/v1/reservations/ee1e8400-e29b-41d4-a716-446655440001",
+									"host": ["http://localhost:3000"],
+									"path": ["v1", "reservations", "ee1e8400-e29b-41d4-a716-446655440001"]
+								}
+							},
+							"status": "No Content",
+							"code": 204,
+							"_postman_previewlanguage": "text",
+							"body": ""
+						}
+					]
+				}
+			]
+		}
+	]
+}
