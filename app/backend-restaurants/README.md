@@ -80,8 +80,14 @@ npx prisma studio
 
 ## 📦 Instalar Dependencias
 
+**Requiere pnpm:**
 ```bash
-npm install
+npm install -g pnpm
+```
+
+**Instalar dependencias del proyecto:**
+```bash
+pnpm install
 ```
 
 ## 🔧 Configuración
@@ -92,11 +98,11 @@ El archivo `.env` ya está configurado con las credenciales de la base de datos 
 
 ```bash
 # Modo desarrollo
-npm run start:dev
+pnpm run start:dev
 
 # Modo producción
-npm run build
-npm run start:prod
+pnpm run build
+pnpm run start:prod
 ```
 
 La API estará disponible en: `http://localhost:3000`
