@@ -1,0 +1,295 @@
+// Generador de Prisma Client
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Fuente de datos - PostgreSQL
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enumeraciones
+enum Role {
+  ADMIN
+  RESTAURANT_OWNER
+  STAFF
+  CUSTOMER
+}
+
+enum OrderType {
+  DINE_IN
+  TAKEOUT
+  DELIVERY
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY
+  SERVED
+  CANCELLED
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  SEATED
+  CANCELLED
+  NO_SHOW
+}
+
+enum PaymentMethod {
+  CASH
+  CREDIT_CARD
+  DEBIT_CARD
+  DIGITAL_WALLET
+  BANK_TRANSFER
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+// Modelos
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  password_hash String
+  full_name     String
+  phone         String?
+  role          Role     @default(CUSTOMER)
+  is_active     Boolean  @default(true)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  // Relaciones
+  restaurants   Restaurant[]
+  reservations  Reservation[]
+  orders        Order[]
+  reviews       Review[]
+
+  @@index([email])
+  @@index([role, is_active])
+}
+
+model Restaurant {
+  id               String   @id @default(uuid())
+  owner_id         String
+  name             String
+  description      String?  @db.Text
+  cuisine_type     String?  @db.VarChar(50)
+  address          String
+  city             String
+  country          String
+  zip_code         String?  @db.VarChar(20)
+  phone            String?  @db.VarChar(20)
+  email            String?  @db.VarChar(255)
+  website          String?  @db.VarChar(255)
+  logo_url         String?  @db.VarChar(500)
+  cover_image_url  String?  @db.VarChar(500)
+  average_rating   Decimal  @default(0) @db.Decimal(3, 2)
+  total_reviews    Int      @default(0)
+  is_active        Boolean  @default(true)
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  // Relaciones
+  owner            User       @relation(fields: [owner_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  restaurant_hours RestaurantHour[]
+  tables           Table[]
+  menu_categories  MenuCategory[]
+  products         Product[]
+  reservations     Reservation[]
+  orders           Order[]
+  reviews          Review[]
+
+  @@unique([owner_id, name])
+  @@index([owner_id, is_active])
+  @@index([city, is_active])
+}
+
+model RestaurantHour {
+  id           String    @id @default(uuid())
+  restaurant_id String
+  day_of_week  Int       // 0 = Domingo, 6 = Sábado
+  open_time    DateTime? // Usamos DateTime para representar TIME
+  close_time   DateTime? // Usamos DateTime para representar TIME
+  is_closed    Boolean   @default(false)
+
+  // Relaciones
+  restaurant   Restaurant @relation(fields: [restaurant_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([restaurant_id])
+  @@index([day_of_week])
+}
+
+model Table {
+  id           String   @id @default(uuid())
+  restaurant_id String
+  table_number Int
+  capacity     Int
+  location     String?  @db.VarChar(50)
+  is_active    Boolean  @default(true)
+
+  // Relaciones
+  restaurant   Restaurant   @relation(fields: [restaurant_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  reservations Reservation[]
+
+  @@unique([restaurant_id, table_number])
+  @@index([restaurant_id])
+}
+
+model MenuCategory {
+  id            String   @id @default(uuid())
+  restaurant_id String
+  name          String
+  description   String?  @db.Text
+  display_order Int      @default(0)
+  is_active     Boolean  @default(true)
+
+  // Relaciones
+  restaurant    Restaurant @relation(fields: [restaurant_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  products      Product[]
+
+  @@index([restaurant_id])
+}
+
+model Product {
+  id               String   @id @default(uuid())
+  restaurant_id    String
+  category_id      String?
+  name             String
+  description      String?  @db.Text
+  price            Decimal  @db.Decimal(10, 2)
+  currency         String   @default("USD") @db.VarChar(3)
+  image_url        String?  @db.VarChar(500)
+  is_available     Boolean  @default(true)
+  preparation_time Int?    // en minutos
+  calories         Int?
+  is_vegetarian    Boolean  @default(false)
+  is_vegan         Boolean  @default(false)
+  is_gluten_free   Boolean  @default(false)
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  // Relaciones
+  restaurant       Restaurant   @relation(fields: [restaurant_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  category         MenuCategory? @relation(fields: [category_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  order_items      OrderItem[]
+
+  @@index([restaurant_id, category_id, is_available])
+  @@index([restaurant_id])
+  @@index([category_id])
+}
+
+model Reservation {
+  id               String             @id @default(uuid())
+  restaurant_id    String
+  user_id          String
+  table_id         String?
+  reservation_date DateTime
+  reservation_time DateTime
+  party_size       Int
+  special_requests String?            @db.Text
+  status           ReservationStatus  @default(PENDING)
+  created_at       DateTime           @default(now())
+  updated_at       DateTime           @updatedAt
+
+  // Relaciones
+  restaurant       Restaurant @relation(fields: [restaurant_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user             User       @relation(fields: [user_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  table            Table?     @relation(fields: [table_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  orders           Order[]
+
+  @@index([restaurant_id, reservation_date])
+  @@index([table_id, reservation_date])
+  @@index([user_id])
+}
+
+model Order {
+  id              String        @id @default(uuid())
+  restaurant_id   String
+  reservation_id  String?
+  user_id         String
+  order_number    String        @unique
+  order_type      OrderType
+  subtotal        Decimal       @db.Decimal(10, 2)
+  tax_amount      Decimal       @default(0) @db.Decimal(10, 2)
+  discount_amount Decimal       @default(0) @db.Decimal(10, 2)
+  total_amount    Decimal       @db.Decimal(10, 2)
+  currency        String        @default("USD") @db.VarChar(3)
+  status          OrderStatus   @default(PENDING)
+  notes           String?       @db.Text
+  created_at      DateTime      @default(now())
+  updated_at      DateTime      @updatedAt
+
+  // Relaciones
+  restaurant      Restaurant   @relation(fields: [restaurant_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  reservation     Reservation? @relation(fields: [reservation_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  user            User         @relation(fields: [user_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  items           OrderItem[]
+  payments        Payment[]
+  reviews         Review[]
+
+  @@index([user_id, created_at])
+  @@index([restaurant_id, status, created_at])
+  @@index([order_number])
+}
+
+model OrderItem {
+  id                  String   @id @default(uuid())
+  order_id            String
+  product_id          String
+  quantity            Int
+  unit_price          Decimal  @db.Decimal(10, 2)
+  subtotal            Decimal  @db.Decimal(10, 2)
+  special_instructions String?  @db.Text
+  created_at          DateTime @default(now())
+
+  // Relaciones
+  order               Order    @relation(fields: [order_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  product             Product  @relation(fields: [product_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([order_id])
+  @@index([product_id])
+}
+
+model Payment {
+  id              String        @id @default(uuid())
+  order_id        String
+  amount          Decimal       @db.Decimal(10, 2)
+  currency        String        @default("USD") @db.VarChar(3)
+  payment_method  PaymentMethod
+  payment_status  PaymentStatus @default(PENDING)
+  transaction_id  String?       @db.VarChar(100)
+  paid_at         DateTime?
+
+  // Relaciones
+  order           Order         @relation(fields: [order_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([order_id])
+}
+
+model Review {
+  id           String   @id @default(uuid())
+  restaurant_id String
+  user_id      String
+  order_id     String?
+  rating       Int      // 1-5
+  comment      String?  @db.Text
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  // Relaciones
+  restaurant   Restaurant   @relation(fields: [restaurant_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user         User         @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  order        Order?       @relation(fields: [order_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([restaurant_id, rating])
+  @@index([user_id])
+}
